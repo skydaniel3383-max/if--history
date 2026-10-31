@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>만약에 연대기 — 역사 IF 국가 시뮬레이션</title>
+<style>
+:root{--bg:#f4efe6;--card:#fffaf0;--tx:#2b2418;--mu:#7a6e5a;--ac:#9a3b1e;--bd:#d9ccb2;--up:#2f7d4a;--dn:#b3302a;--sea:#cfdde0;--nt:#a99d86;--land:#e3d8bd;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1b1812;--card:#26221a;--tx:#efe6d2;--mu:#a39880;--ac:#e0794f;--bd:#3d3626;--up:#6cc58a;--dn:#ef7b73;--sea:#18262b;--nt:#6e6654;--land:#3b3527;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#1b1812;--card:#26221a;--tx:#efe6d2;--mu:#a39880;--ac:#e0794f;--bd:#3d3626;--up:#6cc58a;--dn:#ef7b73;--sea:#18262b;--nt:#6e6654;--land:#3b3527;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:"Noto Serif KR","Nanum Myeongjo",Georgia,serif;line-height:1.6}
+main{max-width:720px;margin:0 auto;padding:16px 14px 40px}
+h1{font-size:28px;margin:10px 0 4px;color:var(--ac)}h2{font-size:19px;margin:4px 0}
+.mu{color:var(--mu);font-size:13px}.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px;margin:10px 0}
+button{font:inherit;font-size:14px;color:var(--tx);background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:10px 12px;cursor:pointer;text-align:left;width:100%;margin:4px 0}
+button:hover{border-color:var(--ac)}button.p{background:var(--ac);color:#fff;border-color:var(--ac);text-align:center;font-weight:700}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:6px}.g2 button{margin:0}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin:8px 0}
+.st{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:4px;text-align:center;font-size:12px}
+.st i{display:block;font-style:normal;font-size:17px;font-weight:700}
+.bar{height:4px;background:var(--bd);border-radius:2px}.bar span{display:block;height:100%;background:var(--ac);border-radius:2px}
+.hd{display:flex;justify-content:space-between;align-items:baseline}.log{font-size:13px;border-left:3px solid var(--bd);padding-left:9px;margin:6px 0}
+textarea,input{font:inherit;width:100%;padding:10px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--tx);margin:6px 0}
+.map{width:100%;display:block;border:1px solid var(--bd);border-radius:10px;margin:8px 0}.sea{fill:var(--sea)}
+.nt{cursor:pointer}.nt circle{fill:var(--nt);stroke:var(--bd);stroke-width:1;vector-effect:non-scaling-stroke;fill-opacity:.72}.nt text{text-anchor:middle;fill:var(--tx);font-weight:700}.land{fill:var(--land);stroke:var(--bd);stroke-width:.6;vector-effect:non-scaling-stroke}
+.ca circle{fill:var(--up)}.cw circle{fill:var(--dn)}.cf circle{fill:#6f9cb5}.ch circle{fill:#c99a4b}.cd circle{fill:var(--ac);opacity:.35}.on circle{stroke:var(--tx);stroke-width:2.5}
+.me circle{fill:var(--ac);stroke:var(--tx);stroke-width:1.5;vector-effect:non-scaling-stroke}.me text{text-anchor:middle;fill:var(--tx);font-weight:700}
+.la{stroke:var(--up);stroke-width:1.5;stroke-dasharray:5 3;vector-effect:non-scaling-stroke}.lw{stroke:var(--dn);stroke-width:2;vector-effect:non-scaling-stroke}
+.row{display:flex;gap:6px}.row button{text-align:center;margin:4px 0}.ov{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:9}.ovb{background:var(--bg);border:1px solid var(--bd);border-radius:12px;padding:14px;max-width:560px;width:100%;max-height:90vh;overflow:auto}button:disabled{opacity:.5;cursor:default}.lg{font-size:12px;color:var(--mu)}.up{color:var(--up)}.dn{color:var(--dn)}
+</style></head><body><main id="app"></main>
+<script>
+const K={e:"경제",m:"군사",t:"기술",s:"민심",d:"외교"},$=h=>{app.innerHTML=h;scrollTo(0,0)},cl=v=>Math.max(0,Math.min(100,Math.round(v))),rn=(a,b)=>a+Math.floor(Math.random()*(b-a+1)),
+esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const SC=[
+{c:"조선",sy:"mon",y:1440,p:[127,37.5],t:"세종대왕, 증기기관차를 발명하다",d:"장영실의 기술이 증기의 힘과 만났다. 한양에서 부산까지 철마가 달린다.",fx:{e:8,t:25,s:-8,m:5},N:[["명나라",116,40,85,10],["여진",128,45,40,-25],["몽골",105,47,55,-15],["일본",135.5,35,50,-10],["류큐",127.7,26.2,15,10]]},
+{c:"로마 제국",sy:"mon",y:100,p:[12.5,41.9],t:"로마, 증기 동력과 인쇄술을 일찍 얻다",d:"알렉산드리아의 증기 장치가 실용화되어 공방과 광산을 움직인다.",fx:{e:15,t:30,m:8,s:-5},N:[["게르만",10,52,45,-35],["파르티아",44.5,33,70,-20],["다키아",24,45.5,35,-25],["쿠시",33,17,25,10],["브리타니아",-1,52,20,-15]]},
+{c:"일본",sy:"dic",y:1274,p:[135.5,35],t:"몽골의 일본 원정, 태풍 없이 성공하다",d:"가미카제는 불지 않았다. 몽골·고려 연합군이 하카타에 상륙했다.",fx:{m:-18,s:-12,e:-8,d:-6},N:[["몽골 원",116.4,40,95,-70,1],["고려",127,37.5,40,-20],["남송",120,30,60,0],["류큐",127.7,26.2,15,15],["아이누",142.5,43,15,-10]]},
+{c:"고구려",sy:"mon",y:612,p:[125.7,39],t:"살수대첩 패배, 수나라의 요동 점령",d:"을지문덕의 계책이 어긋났다. 수의 대군이 평양 가까이 밀려든다.",fx:{m:-22,s:-15,e:-10,d:-5},N:[["수나라",108.9,34.3,95,-70,1],["백제",126.9,36.5,40,-20],["신라",129.2,35.8,35,-30],["돌궐",105,47,60,5],["말갈",130,46,30,-15]]},
+{c:"프랑스",sy:"mon",y:1789,p:[2.35,48.85],t:"프랑스 혁명이 일어나지 않다",d:"루이 16세의 개혁이 성공해 입헌군주제로 연착륙했다.",fx:{s:10,e:5,t:8,m:-4},N:[["영국",-0.1,51.5,75,-40],["프로이센",13.4,52.5,60,-15],["오스트리아",16.4,48.2,65,-5],["스페인",-3.7,40.4,55,20],["네덜란드",4.9,52.4,30,10]]},
+{c:"잉카 제국",sy:"the",y:1532,p:[-72,-13.5],t:"잉카, 천연두에 면역이 있었다면",d:"스페인 원정대가 카하마르카에 왔지만 제국은 건재하다.",fx:{m:10,s:8,e:4,d:-6},N:[["스페인 원정대",-80,-3.5,55,-50],["치무 잔당",-79,-8,25,-10],["아마존 부족",-65,-5,30,-20],["마푸체",-72,-38,35,-20],["아즈텍 잔존",-99,19.4,25,5]]},
+{c:"오스만 제국",sy:"mon",y:1571,p:[29,41],t:"레판토 해전, 오스만의 승리",d:"신성 동맹 함대가 무너졌다. 지중해가 오스만의 호수가 된다.",fx:{m:15,e:8,d:-8,s:4},N:[["베네치아",12.3,45.4,50,-50,1],["스페인",-3.7,40.4,75,-45],["사파비",51.4,35.7,70,-35],["러시아",37.6,55.7,55,-20],["이집트",31.2,30,35,0]]},
+{c:"명나라",sy:"mon",y:1433,p:[118.8,32],t:"정화의 대항해가 중단되지 않다",d:"보선 함대가 아프리카를 지나 대서양까지 항로를 넓힌다.",fx:{e:14,t:12,d:12,s:-5},N:[["몽골",105,47,60,-30],["조선",127,37.5,35,20],["일본",135.5,35,45,-15],["티무르",67,39.6,65,-10],["대월",105.8,21,25,-5]]}];
+const RAW=["-9,37 -9,43 -2,43.5 -1.5,46 -4.5,48.5 2,51 5,53.5 8.5,55 8,57.5 10.5,57.5 10.5,54.5 14,54 20,54.5 21,57 24,57.5 23,59.5 30,60 24,60.5 22,60.5 21,63 25,65 22,65.5 17.5,62 19,60 16,56.5 13,55.5 11,59 5,58.5 5,62 14,68 25,71 40,67.5 44,68 60,69 70,73 80,73 100,77 113,74 130,71 150,71 170,70 180,68.5 180,65 170,60 163,58 156,51 156,57 142,59 137,54 141,52 140,48 135,43 130,42.5 129,39 129,35.5 126,34.5 126,37.5 125,39.5 121.5,39 119,37 122.5,37 120,35 121.5,31 122,29 119,25 115,22.5 110,21 108,21.5 106,19 109,12 105,8.5 103,10.5 100,13.5 100.5,7 103,1.5 101,3 98,8 98.5,16 94,18 92,22 88,22 86,20 80,15 80,10 77,8 73,16 72.5,21 68,23.5 66,25.5 57,25.5 56,27 52,27.5 48.5,30 50,26 51.5,24.5 55,24 56.5,26 58,23.5 55,17 45,13 43,13 39,21 35,28 34.5,29.5 35,33 36,36.5 30,36.5 27,37 26,40 23.5,40 24,38 22,36.5 21,38.5 19.5,41 19,42 13.5,45.5 12.5,44 16,41.5 18.5,40 16,38 15.5,40 12,42 10,44 8,44 3.5,43.2 3,42 0,39 -0.5,38 -2,36.8 -5.5,36",
+"-17,21 -16,16 -17.5,14.5 -13,8 -8,4.5 -2,5 2,6 5,4.5 9,4 9.5,1 12,-5 13.5,-12 12,-17 15,-27 18,-32 20,-35 26,-34 31,-29.5 35,-24 35.5,-20 40,-16 40,-10 39,-5 42,-1 48,5 51,11.5 44,11 43,12.5 39,16 37,21 34,27 32.5,30 30,31.2 25,32 20,31 19,30.3 11,33 10,37 8,37 1,36.5 -2,35.2 -6,35.8 -9.5,32 -13,28 -16,24",
+"-168,66 -162,70 -156,71.5 -141,70 -128,70 -115,68 -95,68 -92,62 -94,59 -88,56 -82,55 -79,52 -77,58 -78,62 -72,62 -65,60 -62,57 -56,52 -60,48 -65,49 -64,45 -70,43 -70,41.5 -74,40.5 -76,37 -76,35 -81,31 -80,26.5 -80.5,25.2 -82,26.5 -83,29.5 -86,30.3 -89,30 -90,29 -94,29.5 -97,27 -97.5,22 -95.5,18.5 -91,19 -90.5,21 -87,21.5 -88,16 -84,15.5 -83.5,11 -81,8.5 -79,9 -77.5,8.5 -80,7.3 -85.5,10 -87.5,13 -92,14.5 -96,15.8 -105.5,20 -105.5,23 -109,25.5 -112.5,30 -114.5,31.5 -117,32.5 -120.5,34.5 -122.5,37.5 -124,40.5 -124,46 -124.5,48.5 -123,49 -127,51 -130,54.5 -134,58 -140,60 -146,60.5 -152,59 -158,56.5 -164,54.8 -158,58.5 -162,60 -165,62 -161,64.5 -168,65.5",
+"-77.5,8.5 -72,12 -67,10.5 -62,10.5 -60,8 -52,5 -50,0 -44,-2.5 -35,-5.5 -35,-9 -39,-14 -39,-18 -41,-22 -45,-23.5 -48.5,-26 -49,-29 -53,-34 -57,-35 -57,-38 -62,-39 -65,-41 -65,-45 -67.5,-46.5 -69,-51 -68.5,-53 -65,-55 -72,-54 -75,-48 -73.5,-40 -73,-33 -71.5,-28 -70.3,-18 -76,-14 -81,-6 -80,-2.5 -79.5,1 -77.5,4",
+"114,-22 122,-18 129,-14.5 131,-12 136,-12 136,-15 140,-17.5 142,-10.7 145,-15 146,-19 150,-22.5 153,-26 153,-30 150.5,-37 146,-39 141,-38 138,-35 135,-34.8 131,-31.5 124,-33.5 118,-35 115,-34 115,-30 113.5,-26",
+"-73,78 -60,82 -30,83.5 -18,80 -20,72 -24,70 -40,65 -43,60 -50,64 -54,69 -58,75","-80,73 -68,70 -62,66.5 -70,63 -78,65 -90,72",
+"-5.5,50 1.5,51 1.5,53 -0.5,56 -2,57.5 -3,58.6 -5.5,58.5 -6,56 -3,54.5 -4.5,53 -5,51.5","-10,52 -6,52 -6,55 -8,55","-24,65.5 -18,66.2 -14,65 -19,63.4 -22,64",
+"130.5,31 132,34 135,34.5 139,35 141,38 141.5,41 140,40 139.5,38 136.5,37 133,35.5 130.5,34","140,42 143,42 145,43.5 142,45.5 141.5,43.5",
+"44,-25 47,-25 50,-15.5 49.5,-12 47,-15 44,-20","95,5.5 98,4 104,-1.5 106,-6 104,-5.5 101,-2 96,2.5","105.5,-6.5 114.5,-7.5 114.5,-8.7 106,-7.5","109,1.5 111,2 117,7 119,5 118,1 116.5,-4 110.5,-3 109,-1","131,-1 138,-1.5 145,-5 150,-10.3 143,-9 138,-8 132,-4","120,18 122,18.5 122,14 124,13 120.5,14.5","-85,22 -82,23.2 -74.5,20 -78,20.5","172.5,-34.5 178,-37.5 175,-41.5 173,-41","172.5,-40.5 174,-41.5 170.5,-46.5 166.5,-46 168,-44","80,9.5 81.8,7.5 81,6 80,7"],
+RL=["28,41.5 28,44 30,46 34,46 37,47 38,45 41.5,42 36,41.5 31,41","47,45 50,46.5 53,45 54,41 54,37 50,37 49,40 47.5,42"],
+cv=a=>a.map(q=>q.split(" ").map(p=>{const[x,y]=p.split(",");return(+x+180)+","+(90-y)}).join(" ")),LAND=cv(RAW),LAKE=cv(RL);
+const SY={
+mon:{n:"왕정",d:"군사와 안정에 강하나 기술이 느림. 세금 반발이 작음.",st:{s:6,m:6,t:-4},inc:1,tol:.6,mil:1.1,tg:0,dr:0,ws:0,up:1},
+rep:{n:"공화정",d:"경제·외교에 강함. 우호 관계가 잘 쌓임.",st:{e:6,d:6},inc:1.1,tol:1,mil:1,tg:0,dr:1,ws:1,up:1},
+dem:{n:"민주주의",d:"기술·민심에 강하나 전쟁 피로와 세금 반발이 큼.",st:{t:6,s:6,m:-4,e:3},inc:1.15,tol:1.3,mil:.9,tg:1,dr:1,ws:3,up:1},
+com:{n:"공산주의",d:"계획경제로 군 유지비가 낮고 강력하나 외교는 고립.",st:{m:8,e:2,d:-8},inc:.95,tol:.5,mil:1.15,tg:0,dr:-1,ws:0,up:.5},
+dic:{n:"군사 독재",d:"최강의 군사력과 세금 내성. 민심과 외교는 낮음.",st:{m:12,s:-8,d:-6},inc:1,tol:.3,mil:1.25,tg:0,dr:-1,ws:0,up:.8},
+the:{n:"신정 국가",d:"신앙으로 민심이 단단하나 기술이 더딤.",st:{s:10,t:-8,e:-2},inc:.95,tol:.5,mil:1,tg:0,dr:0,ws:0,up:1}};
+const ll=(a,b)=>[Math.max(-179,Math.min(179,+a||0)),Math.max(-80,Math.min(80,+b||0))];
+let PEND=null;
+const EV=[["기근","흉년이 들어 곡창이 비어간다.",[["곡물을 풀어 구휼한다",{s:8,e:-8},"민심은 얻었으나 국고가 줄었다."],["수입에 의존한다",{d:6,e:-4},"이웃과의 거래가 늘었다."]]],
+["학자들의 건의","재야의 학자들이 새 학문 기관을 청한다.",[["학당을 세운다",{t:12,e:-6},"인재가 자라기 시작했다."],["거절한다",{s:4,t:-6},"보수층은 흡족해했다."]]],
+["역병","도시에 원인 모를 역병이 번진다.",[["도시를 봉쇄한다",{s:-6,e:-6},"확산은 막았으나 생활이 마비되었다."],["의원을 총동원한다",{t:6,e:-8,s:5},"피해가 줄고 의학이 발전했다."]]],
+["귀족의 음모","권력을 노린 귀족들이 모의를 꾸민다.",[["엄벌한다",{s:-5,m:6},"기강이 섰으나 공포가 감돈다."],["회유한다",{e:-5,s:4},"갈등이 봉합되었다."]]],
+["새로운 발명","공방에서 놀라운 발명품이 나왔다.",[["군사용으로 전용한다",{m:12,t:4},"군의 전력이 향상되었다."],["민간에 맡긴다",{e:8,t:5},"시장이 알아서 키웠다."]]]];
+const ee=(t,x,...c)=>[t,x,c],TT={북한:[125.7,39],일본:[139.7,35.7],중국:[116.4,39.9],소련:[135,48.5],러시아:[131.9,43.1],미국:[150,33],청나라:[116.4,39.9]},nk=(k,p,r,w)=>[k,TT[k][0],TT[k][1],p,r,w?1:0];
+const XE={
+"조선":[ee("철도 노선 논쟁","철마의 첫 노선을 어디에 놓을지 조정이 갈린다.",["한양~부산 종단선",{e:8,t:4,s:-4},"남북 물자가 오가기 시작했다."],["한양~평양 북방선",{m:8,d:-4,e:3},"국경 방어가 든든해졌다."]),ee("석탄과 제철","증기 시대의 국력은 석탄과 철에서 나온다.",["광산을 관영으로 개발",{e:6,t:8,s:-3},"국가 주도 산업이 자리 잡았다."],["민간 상인에게 허가",{e:8,t:4,s:2},"상업이 활기를 띠었다."])],
+"로마 제국":[ee("증기 선박","증기 기관을 단 갤리선 시제품이 지중해에 떴다.",["함대를 증기선으로 교체",{m:10,t:6,e:-6},"해군이 새 시대를 열었다."],["상선에 먼저 보급",{e:10,t:4},"곡물 수송이 빨라졌다."]),ee("노동의 변화","기계가 일자리를 대체하자 해방 노예들의 불안이 커진다.",["고용 보장과 보상금",{s:8,e:-6},"불만이 가라앉았다."],["군단을 배치해 통제",{m:3,s:-8},"반발이 지하로 번졌다."])],
+"일본":[ee("해안 약탈","상륙한 군대가 규슈 연안 마을을 약탈한다.",["해안 방벽을 쌓는다",{m:8,e:-6,s:3},"방어선이 굳어졌다."],["지방 무사에게 방어를 맡긴다",{m:4,s:-4},"혼란 속에 저항이 이어졌다."]),ee("원정군의 동요","강제 동원된 고려·남송 병사들의 사기가 낮다.",["밀사를 보내 이간한다",{d:8,m:4},"일부 부대가 이탈했다."],["정면 승부를 건다",{m:6,s:-4},"치열한 전투가 벌어졌다."])],
+"고구려":[ee("요동의 방어선","수나라 대군이 요동성을 포위했다.",["성을 지키며 지원군을 기다린다",{m:6,s:-4},"성은 버텨냈다."],["기병으로 보급로를 끊는다",{m:8,e:-4},"적의 군량이 흔들렸다."]),ee("투항한 성주들","전쟁 중 여러 성주가 투항을 청해 왔다.",["관용으로 받아들인다",{s:4,d:4,m:-2},"병력이 늘었다."],["엄벌한다",{m:4,s:-6},"기강이 섰으나 원성이 남았다."])],
+"프랑스":[ee("재정 개혁안","궁정의 사치와 전쟁 부채가 국고를 짓누른다.",["귀족에게 과세",{e:10,s:4,d:-3},"재정이 숨통을 텄다."],["왕실 지출 삭감",{e:6,s:6},"절약이 호응을 얻었다."]),ee("계몽 살롱","파리 살롱에서 헌법 논쟁이 뜨겁다.",["언론의 자유를 넓힌다",{t:8,s:6,m:-2},"사상이 꽃피었다."],["검열을 유지한다",{s:-6,m:3},"지하 출판이 늘었다."])],
+"잉카 제국":[ee("철제 무기의 위협","이방인의 화승총과 갑옷은 큰 위협이다.",["대장간을 세워 모방한다",{t:10,m:6,e:-4},"청동 병기가 개량되었다."],["산악 지형을 이용한 방어 전술",{m:8,s:2},"지형이 방패가 되었다."]),ee("도로망 정비","제국 전역을 잇는 도로를 정비할 때다.",["역참과 전령을 확충",{e:8,d:4,s:-2},"통신이 빨라졌다."],["곡창 창고를 늘린다",{s:8,e:3},"기근에 대비했다."])],
+"오스만 제국":[ee("이스탄불 조선소","대규모 함대 재건이 필요하다.",["갤리선 확충",{m:10,e:-6},"함대가 늘었다."],["신형 범선 개발",{t:8,m:5,e:-5},"해군이 현대화되었다."]),ee("예니체리의 요구","정예 군단이 봉급 인상을 요구한다.",["요구를 수용",{m:6,e:-8,s:3},"군단이 충성을 맹세했다."],["개혁으로 억제",{m:-4,e:4,s:-4},"군 내부가 술렁였다."])],
+"명나라":[ee("새 항로","선단이 아프리카 동안에 도달했다.",["교역 거점을 세운다",{e:10,d:6,s:-3},"새 시장이 열렸다."],["탐사를 더 확대",{t:8,d:4,e:-6},"지도가 넓어졌다."]),ee("문관과 환관의 대립","원정 비용을 두고 조정이 갈라졌다.",["환관 세력을 지지",{m:4,d:4,s:-5},"원정은 계속되었다."],["문관의 긴축안을 수용",{e:6,s:4,d:-6},"예산이 안정되었다."])]};
+SC.push(
+{c:"대한제국",sy:"mon",y:1897,L:60,p:[127,37.5],t:"고종, 광무개혁에 성공하다",d:"대한제국이 선포되고 근대화 개혁이 일찍 자리를 잡았다.",fx:{e:6,t:8,m:4,d:-3,s:2},N:[nk("청나라",55,-5),nk("일본",65,-35),nk("러시아",70,-20),nk("미국",60,15)],ev:[
+ee("광무개혁","황제권을 강화하며 근대 개혁을 추진한다.",["철도·산업에 투자",{e:8,t:6,s:-4},"공장과 철도가 늘었다."],["군제를 개편",{m:10,e:-5},"신식 군대가 창설되었다."],["교육과 언론을 육성",{t:6,s:6,e:-3},"신문과 학교가 퍼졌다."]),
+ee("열강의 이권 요구","각국이 광산·철도 이권을 요구한다.",["경쟁시켜 균형 외교",{d:8,e:4,s:-2},"열강이 서로 견제했다."],["일부 양도해 자본 유치",{e:10,d:3,s:-6},"자본이 들어왔으나 반발이 일었다."],["단호히 거절",{s:4,d:-8},"자주 의지는 높였으나 압박이 커졌다."]),
+ee("러일 대립","러시아와 일본이 한반도를 두고 충돌 조짐을 보인다.",["중립을 선언",{d:6,m:-2},"외교전이 시작되었다."],["한쪽과 제한 동맹",{d:10,m:4,s:-5},"방패를 얻었으나 종속 우려가 컸다."],["자주 방어력 증강",{m:12,e:-8},"국방 재정이 늘었다."])]},
+{c:"대한민국",sy:"rep",y:1945,L:60,p:[127,37.5],t:"분단 없는 통일 정부가 수립되다",d:"해방 직후 좌우 합작이 성사되어 남북이 하나의 정부로 출발한다.",fx:{s:-6,e:-12,m:-10,d:4},N:[nk("소련",85,-10),nk("미국",90,15),nk("중국",50,0),nk("일본",20,-25)],ev:[
+ee("신탁통치 논쟁","국내 정파가 신탁통치안을 두고 갈린다.",["연합 정부를 구성",{s:6,d:4,m:-4},"좌우가 한 책상에 앉았다."],["유엔 감시 총선거 추진",{d:6,s:-3,e:2},"국제 승인을 얻었다."],["무장 조직을 정비하며 압박",{m:8,s:-6},"긴장이 커졌다."]),
+ee("토지 개혁","농민들은 토지 분배를 요구한다.",["유상매수·유상분배",{s:8,e:3},"자작농이 늘었다."],["무상몰수·무상분배",{s:10,e:-4,d:-4},"농촌 민심은 얻었으나 지주 반발이 거셌다."],["점진적으로 추진",{e:4,s:-2},"속도에 불만이 쌓였다."]),
+ee("귀국한 인재와 자본","해외에서 돌아온 인력을 어떻게 쓸 것인가?",["산업 부처에 대거 등용",{t:8,e:6,s:-2},"행정 역량이 올랐다."],["지역 대표를 균형 안배",{s:6,d:2},"화합을 얻었다."],["군과 경찰 재건에 투입",{m:8,s:-3},"치안이 안정되었다."])]},
+{c:"대한민국",sy:"rep",y:1950,L:60,p:[127,37.5],t:"6.25 전쟁, 유엔군 참전이 지연되다",d:"남침 직후 국제 지원이 늦어지면서 전선이 급속히 남하한다.",fx:{m:-14,s:-12,e:-10,d:-4},N:[nk("북한",75,-80,1),nk("중국",70,-20),nk("소련",85,-35),nk("일본",30,5),nk("미국",95,25)],ev:[
+ee("낙동강 방어선","전선이 남으로 밀리고 있다.",["방어선을 사수",{m:8,s:-6,e:-6},"버텨냈으나 피해가 컸다."],["후방 유격전으로 분산",{m:4,s:-3,d:2},"적의 진격이 늦춰졌다."],["외교 총력전으로 지원 요청",{d:12,e:-4},"국제 여론이 움직였다."]),
+ee("피난민과 식량","수백만 피난민이 몰려든다.",["배급제 시행",{s:6,e:-8},"굶주림을 막았다."],["민간 구호단체에 의존",{d:6,s:2,e:-3},"해외 구호품이 도착했다."]),
+ee("휴전 논의","전선이 교착되고 휴전론이 고개를 든다.",["휴전 수용과 방위조약 요청",{d:10,m:4,s:-3},"안보 보장을 얻었다."],["북진 통일을 고수",{m:6,s:-8,d:-8},"국제적 고립이 심해졌다."],["중립국 감시를 제안",{d:6,s:2},"절충안이 논의되었다."])]},
+{c:"대한민국",sy:"dem",y:1960,L:60,p:[127,37.5],t:"4.19 이후 장면 내각, 5.16 없이 민주 정부를 유지하다",d:"내각제 정부가 혼란을 수습하고 민주 헌정을 이어간다.",fx:{s:10,e:-4,m:-6,d:4},N:[nk("북한",60,-60),nk("미국",95,30),nk("일본",55,-10),nk("소련",85,-40),nk("중국",55,-35)],ev:[
+ee("정치적 혼란","시위와 정당 분열이 이어진다.",["대화로 풀어간다",{s:6,m:-3},"사회가 숨을 돌렸다."],["질서 유지를 강화",{s:-6,m:4},"치안은 안정되었으나 비판이 일었다."],["국민투표로 쟁점 해소",{s:4,d:2,e:-2},"합의 기반이 넓어졌다."]),
+ee("군 개혁","병력 감축과 지휘 체계 개편이 논의된다.",["감축과 문민 통제",{m:-8,e:6,s:4},"예산 여력이 생겼다."],["군을 유지하며 처우 개선",{m:6,e:-5,s:-2},"군의 충성이 높아졌다."]),
+ee("경제개발 계획","어떤 방식으로 경제를 일으킬 것인가?",["국토건설 사업 중심",{e:8,s:3},"일자리가 늘었다."],["수출 산업 우선",{e:10,t:4,s:-4},"무역이 성장했다."],["미국 원조 의존 확대",{e:6,d:6,t:-2},"자립도는 낮아졌다."])]},
+{c:"대한민국",sy:"dic",y:1961,L:60,p:[127,37.5],t:"군사정부, 약속대로 즉시 민정 이양을 하다",d:"군정이 단기간에 끝나고 민간 정부로 전환하는 길을 걷는다.",fx:{m:8,e:-2,s:-4,d:-4},N:[nk("북한",65,-60),nk("미국",95,25),nk("일본",60,-20),nk("소련",85,-40),nk("중국",55,-35)],ev:[
+ee("경제개발 5개년 계획","재원과 방향을 정해야 한다.",["중공업 중심 투자",{e:6,m:6,t:6,s:-6},"기반 산업이 자라났다."],["경공업·수출 중심",{e:10,s:-2},"수출이 빠르게 늘었다."],["농촌 개발 우선",{s:8,e:3},"농가 소득이 올랐다."]),
+ee("정치 일정","민정 이양 시점을 놓고 군과 정치권이 맞선다.",["선거를 앞당겨 실시",{s:8,d:4,m:-6},"정당성을 높였다."],["안정 후 실시",{m:6,s:-6},"비판과 안정이 함께 왔다."]),
+ee("해외 자금 모색","개발에 쓸 외자를 어디서 구할까?",["서독 차관과 인력 파견",{e:8,d:4,s:-2},"외화가 들어왔다."],["일본과 협상",{e:10,d:-4,s:-6},"자금은 얻었으나 반발이 컸다."],["미국 원조 확대 요청",{e:5,d:6,m:-2},"원조가 늘었다."])]},
+{c:"대한민국",sy:"rep",y:1965,L:60,p:[127,37.5],t:"박정희 정부, 한일 국교정상화 협상이 결렬되다",d:"청구권 자금 없이 경제개발 계획을 이어가야 한다.",fx:{e:-8,d:-6,s:2},N:[nk("일본",65,-30),nk("미국",95,25),nk("북한",55,-60),nk("중국",60,-50),nk("소련",85,-40)],ev:[
+ee("자금 조달 난항","개발 재원이 막혔다.",["서독·미국 차관 확대",{e:6,d:3},"자금이 일부 메워졌다."],["국내 저축 운동",{e:5,s:-4},"허리띠를 졸랐다."],["수출 드라이브 강화",{e:8,s:-3,t:2},"외화 벌이에 속도가 붙었다."]),
+ee("월남 파병 요청","미국이 파병을 요청해 온다.",["파병 수락",{e:8,m:6,d:6,s:-5},"외화와 장비를 얻었으나 희생이 따랐다."],["제한 지원만",{d:2,s:2},"절충안이 받아들여졌다."],["거절",{d:-8,s:4},"동맹 관계가 서먹해졌다."]),
+ee("산업 단지 건설","수출 단지를 어디에 조성할까?",["동남 해안 공업 벨트",{e:10,s:-3},"항만과 공장이 들어섰다."],["수도권 집중",{e:8,s:-2},"인프라 효율이 높았다."],["지방 균형 개발",{s:6,e:5},"격차가 줄었다."])]},
+{c:"대한민국",sy:"rep",y:1972,L:60,p:[127,37.5],t:"유신헌법이 선포되지 않았다면",d:"7.4 남북공동성명 직후, 헌정 질서가 그대로 이어진다.",fx:{s:6,e:2,d:2,m:-2},N:[nk("북한",70,-60),nk("미국",95,15),nk("중국",70,-10),nk("일본",75,0),nk("소련",85,-40)],ev:[
+ee("7.4 남북공동성명 이후","남북 대화 국면이 열렸다.",["대화 채널 확대",{d:8,s:4,m:-2},"교류가 시작되었다."],["제한 교류와 경계 유지",{m:4,d:3},"균형을 잡았다."],["내부 결속에 활용",{s:-4,m:6},"긴장 속에 결속했다."]),
+ee("개헌 논쟁","집권 연장을 둘러싼 논쟁이 격화된다.",["헌법을 지키며 정권 교체를 준비",{s:10,d:4,m:-3},"헌정이 안정되었다."],["제한적 개헌 추진",{s:-4,m:4},"찬반이 갈렸다."],["여야 합의로 개정",{s:6,d:2},"타협안이 마련되었다."]),
+ee("석유 파동","유가가 급등했다.",["에너지 절약과 중동 진출",{e:8,s:-3,d:3},"외화를 벌어들였다."],["원전·대체에너지 투자",{t:8,e:-4},"장기 기반을 닦았다."],["물가 통제",{s:4,e:-6},"체감 물가는 안정되었다."])]},
+{c:"대한민국",sy:"dic",y:1979,L:60,p:[127,37.5],t:"10.26이 일어나지 않았다면",d:"부마 항쟁 이후에도 정권이 유지되며 정국이 이어진다.",fx:{s:-6,e:-4,m:6,d:-4},N:[nk("북한",70,-60),nk("미국",95,10),nk("일본",75,0),nk("중국",70,-20),nk("소련",85,-40)],ev:[
+ee("부마 항쟁 이후","지방 도시의 시위가 확산된다.",["양보와 개혁을 약속",{s:8,m:-4},"분노가 가라앉았다."],["강경 진압",{m:4,s:-10,d:-4},"반발이 더 거세졌다."],["대화 창구 마련",{s:5,d:2},"타협의 길이 열렸다."]),
+ee("중화학 과잉 투자","2차 석유 파동 속에 중화학 투자가 부담이 된다.",["구조조정",{e:6,s:-6},"고통이 따랐다."],["투자 지속",{t:6,e:-6},"성과와 부채가 함께 쌓였다."],["수출 시장 다변화",{e:8,d:3},"위험이 분산되었다."]),
+ee("후계와 정권 안정","장기 집권에 대한 논쟁이 이어진다.",["점진적 이양 일정 발표",{s:8,m:-3},"예측 가능성이 높아졌다."],["체제를 유지",{m:6,s:-6},"안정과 반발이 맞섰다."],["내각 개편",{s:3,e:2},"분위기를 쇄신했다."])]},
+{c:"대한민국",sy:"dic",y:1979,L:60,p:[127,37.5],t:"12.12 군사 반란이 실패하다",d:"신군부의 시도가 저지되고 민주화 일정이 앞당겨진다.",fx:{s:6,m:-8,e:-4,d:2},N:[nk("북한",70,-60),nk("미국",95,15),nk("일본",75,0),nk("중국",70,-20),nk("소련",85,-40)],ev:[
+ee("민주화 일정","조속한 개헌과 선거 요구가 거세다.",["1년 내 직선제 개헌과 선거",{s:10,d:5,m:-4},"정당성이 높아졌다."],["단계적 개헌",{s:4,m:2},"안정적으로 이행했다."],["군 중심 과도정부 유지",{m:6,s:-8},"불만이 쌓였다."]),
+ee("군 내부 갈등","군 내 사조직 청산 문제가 불거진다.",["인사 쇄신과 문민 통제",{m:-4,s:6,d:3},"군이 정치에서 한 걸음 물러났다."],["조용히 봉합",{m:4,s:-2},"갈등이 잠복했다."]),
+ee("경제 위기","물가와 성장률이 모두 악화된다.",["긴축 정책",{e:6,s:-6},"허리띠를 졸랐다."],["수출 지원과 환율 조정",{e:8,s:-2,d:2},"수출이 반등했다."],["복지 확대",{s:8,e:-6},"민심은 얻었으나 재정이 흔들렸다."])]},
+{c:"대한민국",sy:"dic",y:1987,L:60,p:[127,37.5],t:"6월 항쟁 없이 간선제가 유지되다",d:"호헌 조치가 그대로 이어져 직선제 개헌이 무산된다.",fx:{s:-10,d:-4,m:4,e:4},N:[nk("북한",60,-55),nk("미국",95,10),nk("일본",85,0),nk("중국",70,-15),nk("소련",80,-30)],ev:[
+ee("올림픽 준비","서울 올림픽이 다가온다.",["개혁 후 올림픽을 치른다",{s:6,d:8,e:-4},"국제적 평판이 올랐다."],["강경하게 개최를 준비",{e:6,s:-8,d:2},"행사는 성사됐지만 국내 갈등이 남았다."]),
+ee("대학가 시위","직선제 요구 시위가 이어진다.",["대화와 일부 직선제 수용",{s:8,m:-4},"사회가 진정되었다."],["강경 대응",{m:3,s:-10},"시위가 더 번졌다."]),
+ee("3저 호황","저유가·저달러·저금리로 수출이 호황이다.",["수출·설비 투자 확대",{e:10,t:4},"성장이 가속되었다."],["분배와 복지에 일부 투입",{s:6,e:4},"격차가 줄었다."],["부채 상환과 재정 건전화",{e:6},"체력을 비축했다."])]},
+{c:"대한민국",sy:"dem",y:1997,L:40,p:[127,37.5],t:"IMF 외환위기가 일어나지 않았다면",d:"기업·금융 부실이 조기에 정리되어 위기를 피한다.",fx:{e:6,s:4,d:3,t:2},N:[nk("북한",35,-45),nk("일본",80,5),nk("중국",80,10),nk("미국",95,30),nk("러시아",45,0)],ev:[
+ee("부실 대기업 처리","대형 기업 부도가 이어지고 있다.",["단호히 구조조정",{e:6,s:-6},"체질이 개선되었다."],["정부 지원으로 연착륙",{e:-4,s:4},"충격이 완화되었다."],["금융 감독 개혁 병행",{e:8,t:3,s:-3},"제도가 정비되었다."]),
+ee("외환 보유고 관리","단기외채가 위험 수준이다.",["외채 구조 개선",{e:6,d:2},"위험이 줄었다."],["내수 부양",{s:4,e:-4},"소비가 늘었다."],["해외 자본 유치 확대",{e:8,d:3,s:-3},"자본이 들어왔다."]),
+ee("IT 산업 육성","인터넷·통신 인프라에 투자한다.",["초고속망 보급 가속",{t:12,e:-4},"인터넷 강국의 기반이 놓였다."],["벤처 육성 펀드",{t:8,e:4},"창업이 활발해졌다."],["대기업 중심 R&D",{t:6,e:6,s:-2},"수출 경쟁력이 강화되었다."])]},
+{c:"대한민국",sy:"dem",y:2000,L:40,p:[127,37.5],t:"6.15 남북 정상회담 이후 교류가 지속되다",d:"남북 교류가 흔들림 없이 이어지는 길을 걷는다.",fx:{d:10,s:4,e:2,m:-2},N:[nk("북한",35,5),nk("미국",95,25),nk("일본",80,5),nk("중국",85,10),nk("러시아",45,5)],ev:[
+ee("개성 협력","경제 협력을 어떻게 확대할까?",["공단·관광 확대",{e:8,d:4,s:-2},"교류가 늘었다."],["인도적 지원 중심",{s:5,d:4,e:-3},"신뢰가 쌓였다."],["안보 조건과 연계",{m:4,d:-3},"속도 조절이 이루어졌다."]),
+ee("핵 문제","북한의 핵 개발 의혹이 불거진다.",["대화와 압박 병행",{d:6,m:2,s:-2},"균형을 모색했다."],["6자회담을 주도",{d:10,e:-2},"외교 무대에서 존재감을 키웠다."],["안보 태세 강화",{m:8,d:-4,e:-4},"군 대비가 높아졌다."]),
+ee("동맹과의 조율","동맹과 대북 정책을 조율해야 한다.",["동맹을 중시",{m:4,d:4,s:-2},"공조가 굳어졌다."],["자주 외교를 강화",{d:-2,s:4},"의견 차이가 불거졌다."],["균형 외교",{d:6},"선택지를 넓혔다."])]});
+const KR=SC.filter(x=>x.c.startsWith("대한"));
+const CE=[["민란","수도에서 대규모 시위와 민란이 일어났다.",[["양보하고 개혁을 약속한다",{s:14,e:-6},"민심이 가라앉았다."],["진압한다",{m:-6,s:8,d:-4},"피를 흘렸으나 질서를 되찾았다."]]],["재정 위기","국고가 바닥을 드러냈다.",[["긴축 재정을 편다",{e:12,s:-10},"허리띠를 졸랐다."],["화폐를 개혁한다",{e:10,d:-6,s:-4},"단기 처방이 효과를 냈다."]]],["침공의 위협","약해진 군사력을 노린 압박이 거세다.",[["총동원령",{m:12,e:-10,s:-4},"전력을 쥐어짰다."],["외교로 시간을 번다",{d:8,e:-6,s:-4},"굴욕을 감수했다."]]]];
+EV.push(["무역 상인의 제안","상인단이 새 교역로 개척을 제안한다.",[["후원한다",{e:8,d:4,s:-2},"새 교역로가 열렸다."],["관세를 높인다",{e:6,d:-4},"세수가 늘었다."]]],
+["지방 반란","변방의 유력자가 반기를 들었다.",[["군을 보낸다",{m:-4,s:4,e:-4},"반란을 진압했다."],["자치를 인정한다",{s:-4,d:2,e:2},"타협으로 마무리되었다."]]],
+["대재해","지진과 홍수가 연이어 닥쳤다.",[["재건에 국고를 투입",{e:-8,s:8},"민심을 얻었다."],["복구를 지방에 맡긴다",{s:-6,e:2},"피해가 길어졌다."]]],
+["외래 문화의 유입","낯선 사상과 풍습이 빠르게 퍼진다.",[["적극 수용",{t:6,s:-2,d:3},"문화가 다채로워졌다."],["전통을 지킨다",{s:4,t:-3},"보수층은 안도했다."]]],
+["국경 요새 건설","국경 방어 체계를 강화할 시점이다.",[["요새를 쌓는다",{m:8,e:-6},"방어선이 굳건해졌다."],["기동군을 키운다",{m:6,t:2,e:-4},"대응 속도가 빨라졌다."]]],
+["세제 개편","세금 제도를 손볼 때가 왔다.",[["간소화하고 세율을 낮춘다",{s:6,e:-4},"납세가 수월해졌다."],["징수를 강화한다",{e:8,s:-6},"국고가 두둑해졌다."]]]);
+let G=null,SMP=null;
+window.claude?.use("sample").then(s=>{SMP=s;if(!G)home()}).catch(()=>{});
+function home(){if(G){G.over=true;clearTimeout(G.tm)}ovx();$(`<h1>만약에 연대기</h1><p class="mu">역사가 달라졌다면? 분기점에서 시작해 실시간으로 흐르는 120년 동안 이웃 나라와 외교·전쟁을 벌이며 나라를 이끄세요. 정치체제는 당시 역사 그대로 시작하지만, 위험을 감수하고 바꿀 수 있습니다.</p>
+<div class="card"><button class="p" onclick="start(SC[rn(0,SC.length-1)])">🎲 랜덤 모드 (전체)</button><button class="p" onclick="start(KR[rn(0,KR.length-1)])">🇰🇷 한국사 랜덤</button><button class="p" onclick="pick()">📜 선택 모드</button></div>
+${SMP?`<div class="card"><b>✍ 나만의 가정 (Claude가 시나리오 생성)</b><textarea id="cu" rows="2" placeholder="예: 1592년 이순신이 임진왜란 전에 일본 수군을 선제 격파했다면"></textarea><button class="p" onclick="custom()">시나리오 생성</button><div class="mu">또한 몇 년마다 Claude가 역사 서술과 사건을 생성합니다.</div></div>`:`<p class="mu">AI 기능을 쓸 수 없는 환경이라 기본 사건으로 진행됩니다.</p>`}`)}
+function pick(){const row=l=>l.map(x=>`<button onclick="start(SC[${SC.indexOf(x)}])"><b style="color:var(--ac)">${x.c} · ${x.y}년</b><br>${x.t}<br><span class="mu">${x.d}</span></button>`).join("");
+$(`<div class="hd"><h2>분기점 선택</h2><span class="mu" onclick="home()" style="cursor:pointer">← 처음으로</span></div><h2>🇰🇷 한국사 IF</h2>${row(KR)}<h2>🌍 세계사 IF</h2>${row(SC.filter(x=>!KR.includes(x)))}`)}
+async function custom(){const v=cu.value.trim();if(!v)return;$(`<div class="card">역사의 분기점을 짜는 중…</div>`);
+try{const r=await Promise.race([SMP.json(`역사 IF 국가 시뮬레이션 게임용 시나리오를 만들어라. 가정: "${v}". 이 가정이 일어난 직후 시점의 JSON만 출력:
+{"c":"플레이어 국가명","sy":"mon(왕정)|rep(공화정)|dem(민주주의)|com(공산주의)|dic(군사독재)|the(신정) 중 당시 체제 코드","y":시작연도(정수),"p":[플레이어 수도 경도,위도],"t":"분기점 제목","d":"한두 문장 설명","fx":{"e":-25~25,"m":..,"t":..,"s":..,"d":..},"N":[["이웃국가명",경도,위도,국력10~95,관계-80~80,전쟁중이면1]]}
+N은 4~5개, 해당 시대의 실제 이웃 세력의 중심 도시 좌표(실제 경위도, 동경·북위가 양수).`,{modelTier:"quick",cache:false}),new Promise((_,j)=>setTimeout(j,40000))]);
+if(!r.c||!r.t||!Array.isArray(r.p)||!Array.isArray(r.N)||r.N.length<3)throw 0;r.y=+r.y||1500;r.sy=SY[r.sy]?r.sy:"mon";r.p=ll(r.p[0],r.p[1]);
+r.N=r.N.slice(0,6).map(a=>{const q=ll(a[1],a[2]);return[String(a[0]),q[0],q[1],Math.max(10,Math.min(95,+a[3]||40)),Math.max(-80,Math.min(80,+a[4]||0)),a[5]?1:0]});
+start(r)}catch(e){$(`<div class="card dn">시나리오 생성에 실패했습니다.</div><button onclick="home()">돌아가기</button>`)}}
+function start(s){PEND=s;begin(SY[s.sy]?s.sy:"mon")}
+function begin(k){const s=PEND;G={s,sy:k,st:{e:50,m:50,t:50,s:50,d:50},gold:100,tax:1,nuke:0,t:0,max:s.L||120,q:(s.ev||XE[s.c]||[]).slice(),used:[],sp:0,last:1,cd:{},sysUntil:0,evIn:rn(10,16),over:false,terr:0,sel:-1,log:[],msg:s.d+" ▶ 버튼(또는 스페이스바)으로 시간을 흐르게 하세요.",N:s.N.map(a=>({n:a[0],x:a[1],y:a[2],pw:a[3],rel:a[4],war:!!a[5],al:0,tr:0,dead:0}))};
+for(const x in K)G.st[x]=cl(G.st[x]+((s.fx||{})[x]||0)+(SY[k].st[x]||0));G.log.push(`${s.y}년 — ${s.t} (${SY[k].n})`);R()}
+const stats=st=>`<div class="stats">${Object.keys(K).map(k=>`<div class="st">${K[k]}<i>${Math.round(st[k])}</i><div class="bar"><span style="width:${st[k]}%"></span></div></div>`).join("")}</div>`;
+const P=()=>{const g=G;return g.st.m*SY[g.sy].mil+g.st.t*.3+g.terr*4+g.N.filter(n=>n.al&&!n.dead).reduce((a,n)=>a+n.pw*.15,0)};
+function R(){const g=G;
+app.innerHTML=`<div class="hd"><b style="color:var(--ac)">${esc(g.s.c)}</b><b id="dt"></b></div>
+<div class="row" id="spd">${["⏸ 정지","▶ 보통","⏩ 빠름","⏭ 최고속"].map((x,i)=>`<button onclick="spd(${i})" class="${g.sp==i?"p":""}">${x}</button>`).join("")}</div>
+<div class="mu" id="inf"></div><div id="sts"></div><div id="mp">${map()}</div><div id="pn">${panel()}</div>${pol()}
+<div class="card"><div class="mu">최근 소식</div><span id="msg">${esc(g.msg)}</span></div>`;hud()}
+function map(){const g=G,P0=g.s.p,pts=[P0,...g.N.map(n=>[n.x,n.y])],xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]),
+cx=(Math.min(...xs)+Math.max(...xs))/2,cy=(Math.min(...ys)+Math.max(...ys))/2,
+W=Math.min(360,Math.max((Math.max(...xs)-Math.min(...xs))*1.5,(Math.max(...ys)-Math.min(...ys))*2.3,60)),H=W*.64,f=W/100,X=l=>l+180,Y=l=>90-l,
+ln=(n,c)=>`<line x1="${X(P0[0])}" y1="${Y(P0[1])}" x2="${X(n.x)}" y2="${Y(n.y)}" class="${c}"/>`;
+return `<svg viewBox="${X(cx)-W/2} ${Y(cy)-H/2} ${W} ${H}" class="map"><rect x="-400" y="-200" width="1200" height="600" class="sea"/>`+
+LAND.map(p=>`<polygon points="${p}" class="land"/>`).join("")+LAKE.map(p=>`<polygon points="${p}" class="sea"/>`).join("")+
+g.N.map(n=>n.dead?"":n.war?ln(n,"lw"):n.al?ln(n,"la"):"").join("")+
+g.N.map((n,i)=>{const r=(2.5+n.pw/16)*f*1.1,c=n.dead?"cd":n.war?"cw":n.al?"ca":n.rel>20?"cf":n.rel<-30?"ch":"";
+return `<g onclick="G.sel=${i};R()" class="nt ${c} ${g.sel==i?"on":""}"><circle cx="${X(n.x)}" cy="${Y(n.y)}" r="${r.toFixed(2)}"/><text x="${X(n.x)}" y="${(Y(n.y)+r+2.8*f).toFixed(2)}" font-size="${(2.6*f).toFixed(2)}">${esc(n.n)}${n.dead?"(영토)":""}</text></g>`}).join("")+
+`<g class="me"><circle cx="${X(P0[0])}" cy="${Y(P0[1])}" r="${((4.5+g.terr*1.2)*f).toFixed(2)}"/><text x="${X(P0[0])}" y="${(Y(P0[1])+(4.5+g.terr*1.2)*f+3*f).toFixed(2)}" font-size="${(3*f).toFixed(2)}">${esc(g.s.c)}</text></g></svg><div class="lg">🟢동맹 🔴전쟁 🔵우호 🟠적대 ⚪중립 · 원 크기=국력 · 지도는 관련 지역으로 자동 확대</div>`}
+function panel(){const g=G,n=g.N[g.sel];if(!n)return`<div class="card mu">지도의 국가를 눌러 외교·전쟁을 펼치세요.</div>`;
+if(n.dead)return`<div class="card">${esc(n.n)}은(는) 이미 우리의 영토입니다.</div>`;
+const b=(id,l,c)=>`<button onclick="A('${id}')">${l}${c?` <span class="mu">${c}</span>`:""}</button>`;
+return `<div class="card"><h2>${esc(n.n)}</h2><div class="mu">국력 ${n.pw} · 관계 ${Math.round(n.rel)} · ${n.war?"⚔ 전쟁 중":n.al?"🤝 동맹":n.tr?"📦 교역 중":"중립"}</div><div class="g2" style="margin-top:8px">`+
+(n.war?b("atk","⚔ 공격")+(g.nuke>=3?b("nuke","☢ 핵 공격"):"")+b("peace","🕊 평화 제안"):
+b("gift","🎁 선물","금화 40")+b("trade","📦 교역 협정")+(n.al?b("brk","💔 동맹 파기"):b("ally","🤝 동맹 제안"))+b("trib","👑 조공 요구")+b("war","🔥 선전포고")+b("spy","🕵 이간계","금화 30"))+`</div></div>`}
+function pol(){const g=G,b=(id,l,c)=>`<button onclick="A('${id}')">${l} <span class="mu">${c}</span></button>`;
+return `<div class="card"><b>내정</b><div class="g2" style="margin-top:6px"><button onclick="G.tax=(G.tax+1)%3;R()">💹 세율 변경 (무료)</button>${b("sys","🏛 정치체제 변경","금화 100")}${b("mil","🛡 군사 증강","금화 60")}${b("res","🔬 기술 연구","금화 60")}${b("inv","🌾 경제 투자","금화 50")}${b("wel","🎎 복지·축제","금화 40")}${g.nuke<3?b("dev","☢ 핵 개발","금화 120·기술55+"):`<button disabled>☢ 핵 개발 완료</button>`}</div></div>`}
+function A(id){if(id=="sys")return sysPick();const g=G,n=g.N[g.sel],s=g.st,C={mil:60,res:60,inv:50,wel:40,dev:120,gift:40,spy:30}[id]||0;
+if(g.gold<C){g.msg="금화가 부족합니다.";return R()}
+if(id=="dev"&&s.t<55){g.msg="핵 개발에는 기술 55 이상이 필요합니다.";return R()}
+const nt=["gift","trade","ally","brk","trib","war","spy","atk","nuke","peace"].includes(id);if(nt&&(!n||n.dead)){g.msg="먼저 지도에서 대상 국가를 고르세요.";return R()}
+const ck=id+(["mil","res","inv","wel","dev"].includes(id)?"":g.sel),ex=(g.cd[ck]||0)-g.t;if(ex>0){g.msg=`재사용까지 ${ex}개월`;return R()}g.cd[ck]=g.t+(CD[id]||0);g.gold-=C;let m="";const adj=(k,v)=>s[k]=cl(s[k]+v),a=`${dtx()} — `;
+switch(id){
+case"mil":adj("m",8);m="군을 증강했다. 군사 +8";break;case"res":adj("t",8);m="학자와 장인을 후원했다. 기술 +8";break;
+case"inv":adj("e",7);m="도로와 농지에 투자했다. 경제 +7";break;case"wel":adj("s",10);m="백성에게 잔치를 베풀었다. 민심 +10";break;
+case"dev":g.nuke++;m=g.nuke>=3?"핵 개발에 성공! 군사 +15, 외교 -10":`핵 개발 진행 ${g.nuke}/3`;if(g.nuke>=3){adj("m",15);adj("d",-10)}break;
+case"gift":n.rel=Math.min(100,n.rel+15);m=`${n.n}에 선물을 보냈다. 관계 +15`;break;
+case"trade":if(n.rel>-20){n.tr=1;n.rel+=8;adj("e",5);m=`${n.n}과(와) 교역 협정 체결. 매 턴 금화 +10`}else m=`${n.n}이(가) 협정을 거부했다.`;break;
+case"ally":if(n.rel>=35&&Math.random()<.4+n.rel/200){n.al=1;adj("d",6);m=`${n.n}과(와) 동맹을 맺었다!`}else m=`${n.n}이(가) 동맹 제안을 거절했다. (관계 35 이상 필요)`;break;
+case"brk":n.al=0;n.rel-=30;adj("d",-5);m=`${n.n}과(와) 동맹을 파기했다.`;break;
+case"trib":if(n.pw<P()*.6&&!n.al&&Math.random()<.6){g.gold+=50;n.rel-=25;m=`${n.n}이(가) 조공을 바쳤다. 금화 +50`}else{n.rel-=20;m=`${n.n}이(가) 조공 요구를 일축했다.`}break;
+case"spy":g.N.forEach(o=>{if(o!=n&&!o.dead&&!o.al)o.rel-=5});n.rel-=12;m="첩자를 풀어 주변국의 불화를 부추겼다.";break;
+case"war":n.war=1;n.al=0;n.rel=-80;adj("d",-4);adj("s",-3);m=`${n.n}에 선전포고했다!`;break;
+case"peace":if(Math.random()<.35+(n.pw<P()?.3:0)||n.pw<20){n.war=0;n.rel=-20;m=`${n.n}과(와) 휴전했다.`}else m="상대가 평화 제안을 거부했다.";break;
+case"nuke":n.pw=Math.max(0,n.pw-70);adj("d",-25);adj("s",-5);g.N.forEach(o=>{if(o!=n&&!o.dead)o.rel-=25});m=`☢ ${n.n}에 핵을 투하했다. 세계가 경악했다.`;if(n.pw<=0)m+=conq(n);break;
+case"atk":{const me=P()+rn(0,30),en=n.pw+rn(0,30);if(me>en){n.pw=Math.max(0,n.pw-rn(15,30));adj("m",-3);g.gold+=20;m=`${n.n}의 군대를 격파했다. 금화 +20`;if(n.pw<=0)m+=conq(n)}else{adj("m",-10);adj("s",-4);m=`${n.n}에게 패배했다. 군사 -10, 민심 -4`}}}
+g.msg=m;g.log.push(a+m);R()}
+function conq(n){n.dead=1;n.war=0;n.al=0;G.terr++;G.st.e=cl(G.st.e+8);G.st.s=cl(G.st.s+3);G.gold+=40;return ` ${n.n}을(를) 병합했다! 경제 +8, 금화 +40`}
+const SPD=[0,1100,500,170],CD={mil:6,res:6,inv:6,wel:6,dev:12,gift:3,trade:6,ally:6,trib:12,spy:6,atk:2,peace:6,nuke:12},AU={mon:3,the:3,dic:5,com:4,rep:1,dem:0},cf=v=>Math.max(0,Math.min(100,v)),
+dtx=()=>{const g=G;return `${g.s.y+Math.floor(g.t/12)}년 ${g.t%12+1}월`},$g=i=>document.getElementById(i),
+sig=()=>JSON.stringify(G.N.map(n=>[Math.round(n.pw/3),n.war,n.al,n.dead]));
+function hud(){const g=G;if(!g||!$g("dt"))return;$g("dt").textContent=dtx();$g("inf").innerHTML=`🏛 ${SY[g.sy].n} · 💰 ${Math.floor(g.gold)} · 세율 ${["낮음","보통","높음"][g.tax]} · ${g.nuke>=3?"☢ 핵 보유":"핵 개발 "+g.nuke+"/3"}`;$g("sts").innerHTML=stats(g.st)}
+function say(t){G.msg=t;const m=$g("msg");if(m)m.textContent=t}
+function mapUp(){if($g("mp")){$g("mp").innerHTML=map();$g("pn").innerHTML=panel()}}
+function spd(i){const g=G;if(!g||g.over)return;g.sp=i;if(i)g.last=i;clearTimeout(g.tm);document.querySelectorAll("#spd button").forEach((b,j)=>b.className=j==i?"p":"");if(i)loop()}
+function loop(){const g=G;if(!g||g.over||!g.sp)return;tick();if(G===g&&!g.over&&g.sp)g.tm=setTimeout(loop,SPD[g.sp])}
+addEventListener("keydown",e=>{if(e.code=="Space"&&G&&!G.over&&!$g("ov")&&$g("spd")){e.preventDefault();spd(G.sp?0:G.last)}});
+function tick(){const g=G,s=g.st,Y=SY[g.sy];g.t++;
+const base=Math.round(s.e*.5)+[-8,0,15][g.tax]+g.N.filter(n=>n.tr&&!n.dead).length*10+g.terr*10;
+g.gold+=(base*Y.inc-s.m*.25*Y.up)/8;
+if(g.gold<0){g.gold=0;s.s=cf(s.s-.4);s.m=cf(s.m-.2)}
+const sp=[3,0,-5][g.tax];s.s=cf(s.s+(sp<0?sp*Y.tol:sp)/120);s.e=cf(s.e+(s.t-50)/120);s.t=cf(s.t+Y.tg/120);
+const W=g.N.filter(n=>n.war&&!n.dead),al=g.N.filter(n=>n.al&&!n.dead).length;
+W.forEach(n=>{s.m=cf(s.m-Math.max(.3,n.pw/8-al*2)/12);s.s=cf(s.s-(2+Y.ws)/12)});
+if(g.t%6==0)half();if(g.t%12==0)year();
+if(s.s<=0)return end("민중 혁명","백성의 분노가 폭발해 정권이 무너졌다.");
+if(s.m<=0&&W.length)return end("나라의 멸망","군이 무너져 적에게 수도를 내주었다.");
+if(g.t>=g.max*12)return end();
+if(--g.evIn<=0){g.evIn=rn(30,54);trigger()}
+hud()}
+function half(){const g=G;let c=0;g.N.forEach(n=>{if(n.dead||n.war)return;if(n.rel<-60&&n.pw>P()*.7&&Math.random()<.04){n.war=1;n.al=0;c=1;say(`${n.n}이(가) 우리에게 선전포고했다!`);g.log.push(`${dtx()} — ${n.n}의 선전포고`)}});if(c)mapUp()}
+function year(){const g=G,Y=SY[g.sy],sg=sig();g.N.forEach(n=>{if(n.dead)return;n.pw=Math.max(5,Math.min(100,n.pw+rn(-1,2)));if(!n.war){n.rel=Math.max(-100,Math.min(100,n.rel+Y.dr*.3+(n.al?.6:n.rel>0?-.3:.3)));if(n.al&&n.rel<10){n.al=0;say(`${n.n}이(가) 동맹을 이탈했다.`)}}});if(sg!=sig())mapUp()}
+function ov(h){let o=$g("ov");if(!o){o=document.createElement("div");o.id="ov";o.className="ov";document.body.appendChild(o)}o.innerHTML=`<div class="ovb">${h}</div>`}
+function ovx(){const o=$g("ov");if(o)o.remove()}
+async function trigger(){const g=G,s=g.st;g.resume=g.sp||1;spd(0);ov(`<div class="card">${SMP?"역사가 기록되는 중…":"사건 발생…"}</div>`);let ev=null,nar="";const sq=g.q.length?g.q.shift():null;if(sq)ev={t:sq[0],x:sq[1],c:sq[2]};
+if(SMP&&!ev){try{const r=await Promise.race([SMP.json(`역사 IF 국가 시뮬레이션의 한 장면을 서술하라. 분기점: ${g.s.t}(${g.s.c}, ${g.s.y}년). 현재 ${dtx()}. 정치체제: ${SY[g.sy].n}.
+수치(0~100): 경제${Math.round(s.e)} 군사${Math.round(s.m)} 기술${Math.round(s.t)} 민심${Math.round(s.s)} 외교${Math.round(s.d)}, 금화${Math.floor(g.gold)}, 핵${g.nuke>=3?"보유":"미보유"}.
+이웃: ${g.N.map(n=>`${n.n}(국력${Math.round(n.pw)},관계${Math.round(n.rel)}${n.war?",전쟁":""}${n.al?",동맹":""}${n.dead?",병합":""})`).join(", ")}.
+최근 행동: ${g.log.slice(-5).join(" / ")}.
+JSON만 출력: {"narrative":"지난 수년간의 역사 서술 2~3문장","event":{"title":"","text":"지금 닥친 사건, 2문장","choices":[{"label":"","fx":{"e":0,"m":0,"t":0,"s":0,"d":0},"result":"한 문장"}]}}
+choices는 2~3개, fx는 -15~15 정수, 시대·정치체제·분기점의 파급 효과에 맞는 구체적 내용.`,{modelTier:"quick",cache:false}),new Promise((_,j)=>setTimeout(j,35000))]);
+nar=String(r.narrative||"");const e=r.event;if(e&&Array.isArray(e.choices)&&e.choices.length>=2)ev={t:String(e.title),x:String(e.text),c:e.choices.slice(0,3).map(c=>{const f={};for(const k in K)f[k]=Math.max(-15,Math.min(15,Math.round(+(c.fx||{})[k]||0)));return[String(c.label),f,String(c.result)]})}}catch(e){}}
+if(G!==g||g.over)return;
+if(!ev){const pl=EV.filter(x=>!g.used.slice(-8).includes(x[0])),cr=s.s<35?CE[0]:s.e<30?CE[1]:s.m<35&&g.N.some(n=>n.war&&!n.dead)?CE[2]:null,e=cr&&Math.random()<.6?cr:pl[rn(0,pl.length-1)];g.used.push(e[0]);ev={t:e[0],x:e[1],c:e[2]}}
+g.ev=ev;ov(`<div class="mu">${esc(g.s.c)} · ${dtx()}</div>${stats(s)}${nar?`<div class="card">${esc(nar)}</div>`:""}<div class="card"><h2>${esc(ev.t)}</h2><p>${esc(ev.x)}</p></div>${ev.c.map((c,i)=>`<button onclick="ch(${i})">${esc(c[0])}</button>`).join("")}`)}
+function ch(i){const g=G,c=g.ev.c[i];for(const k in c[1])if(K[k])g.st[k]=cl(g.st[k]+c[1][k]);g.log.push(`${dtx()} — ${g.ev.t}: ${c[0]}`);say(c[2]);ovx();hud();spd(g.resume||1)}
+function risk(k){const g=G,d=AU[k]-AU[g.sy],s=g.st.s,m=g.st.m;let r=.06*Math.abs(d)+(s<40?.2:s<55?.08:s>75?-.08:0);if(d>=2)r+=.1+(s>55?.08:0);else if(d<=-2)r+=.06+(m>60?.08:0);return Math.max(.03,Math.min(.85,r))}
+function sysPick(){const g=G;g.resume=g.sp;spd(0);const left=g.sysUntil-g.t;
+ov(`<h2>정치체제 개혁</h2><p class="mu">금화 100 필요. 체제 격차가 클수록, 민심이 낮을수록 시민 혁명·쿠데타로 정권이 무너질 위험이 큽니다.${left>0?` (다음 개혁까지 ${left}개월)`:""}</p>${Object.keys(SY).filter(k=>k!=g.sy).map(k=>{const d=AU[k]-AU[g.sy],r=Math.round(risk(k)*100);return `<button ${left>0?"disabled":""} onclick="reform('${k}')"><b style="color:var(--ac)">${SY[k].n}</b> <span class="${r>30?"dn":"mu"}">${d>=2?"시민 혁명":d<=-2?"쿠데타":"정국 혼란"} 위험 ${r}%</span><br><span class="mu">${SY[k].d}</span></button>`}).join("")}<button onclick="ovx();spd(G.resume)">취소</button>`)}
+function reform(k){const g=G,s=g.st;ovx();if(g.gold<100){say("금화(100)가 부족합니다.");return spd(g.resume)}
+g.gold-=100;const d=AU[k]-AU[g.sy],r=risk(k),nm=SY[k].n;
+if(Math.random()<r){const kind=d>=2?"시민 혁명":d<=-2?"군사 쿠데타":"정국 붕괴";
+if(s.s<40||Math.random()<.4){g.log.push(`${dtx()} — ${nm} 체제 개혁 시도: ${kind}`);return end(kind,`${nm}(으)로의 급격한 개혁이 거센 저항을 불렀고, ${kind}으로 정권이 무너졌다.`)}
+s.s=cl(s.s-20);s.m=cl(s.m-15);g.gold=Math.floor(g.gold/2);g.sysUntil=g.t+24;say(`${nm} 개혁이 ${kind}의 기운 속에 좌초했다. 민심 -20, 군사 -15, 금화 절반 손실.`)}
+else{const o=SY[g.sy],n=SY[k];for(const x in K)s[x]=cl(s[x]+((n.st[x]||0)-(o.st[x]||0)));s.s=cl(s.s-8);g.sy=k;g.sysUntil=g.t+60;say(`${nm}(으)로 체제를 개혁했다. 혼란 속에서도 정권은 살아남았다.`);g.log.push(`${dtx()} — 체제 개혁: ${nm}`)}
+R();spd(g.resume)}
+function end(ft,fd){G.over=true;clearTimeout(G.tm);ovx();const g=G,s=g.st,avg=(s.e+s.m+s.t+s.s+s.d)/5,sc=avg+g.terr*6+g.N.filter(n=>n.al).length*2;
+const top=Object.keys(K).sort((a,b)=>s[b]-s[a])[0],nm={e:"상업과 부의 제국",m:"무력으로 군림한 강국",t:"혁신의 선도국",s:"백성이 사랑한 태평국",d:"외교로 빛난 중재자"};
+const gr=ft?"F":sc>=85?"S":sc>=72?"A":sc>=60?"B":sc>=48?"C":"D";
+$(`<p class="mu">${esc(g.s.t)} · ${SY[g.sy].n}</p><h1>${ft||nm[top]}</h1><div class="card"><h2 style="font-size:44px;margin:0;color:var(--ac)">${gr}</h2><p>${ft?fd:`${esc(g.s.c)}는 ${g.s.y+g.max}년, ${nm[top]}으로 기록되었다. 병합한 나라 ${g.terr}개.`}</p>${stats(s)}</div>
+<h2>연대기</h2>${g.log.map(l=>`<div class="log">${esc(l)}</div>`).join("")}<button class="p" onclick="start(G.s)">같은 시나리오 재도전</button><button class="p" onclick="home()">처음으로</button>`)}
+home();
+</script></body></html>
